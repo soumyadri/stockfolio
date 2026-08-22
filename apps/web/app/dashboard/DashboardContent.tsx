@@ -29,7 +29,7 @@ export function DashboardContent() {
           <AllocationSection />
 
           <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-2 lg:gap-6">
-            <WatchlistSection onTrade={setSelectedStock} />
+            <WatchlistSection />
             <OrderSection selectedStock={selectedStock} onStockChange={setSelectedStock} />
           </div>
 

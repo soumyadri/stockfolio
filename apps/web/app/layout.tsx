@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { AuthProvider } from "../lib/auth/context";
+import { WatchlistProvider } from "../lib/watchlist/context";
 import "./globals.css";
 
 const inter = Inter({
@@ -17,7 +18,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className={`${inter.className} min-h-screen antialiased`}>
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <WatchlistProvider>{children}</WatchlistProvider>
+        </AuthProvider>
       </body>
     </html>
   );

@@ -44,6 +44,13 @@ function UserMenu() {
                 <p className="text-xs text-slate-500">Paper trader</p>
               </div>
             </div>
+            <Link
+              href="/wallet"
+              onClick={() => setOpen(false)}
+              className="block w-full px-4 py-2.5 text-left text-sm text-slate-200 hover:bg-[#252525]"
+            >
+              Wallet
+            </Link>
             <button
               type="button"
               onClick={() => {
@@ -72,14 +79,27 @@ export function Header() {
           <Logo className="hidden sm:flex" />
         </Link>
 
+        <nav className="hidden shrink-0 items-center gap-4 border-l border-[#1f1f1f] pl-3 text-sm lg:flex">
+          <Link href="/dashboard" className="text-slate-400 transition hover:text-white">
+            Dashboard
+          </Link>
+          <Link href="/wallet" className="text-slate-400 transition hover:text-white">
+            Wallet
+          </Link>
+        </nav>
+
         <div className="flex min-w-0 flex-1 items-center gap-3 overflow-x-auto border-l border-[#1f1f1f] pl-3 text-xs scrollbar-none sm:gap-5 sm:pl-4 sm:text-sm">
           {tickerItems.map((item) => (
-            <span key={item.symbol} className="shrink-0 whitespace-nowrap">
+            <Link
+              key={item.symbol}
+              href={`/stock/${item.symbol}`}
+              className="shrink-0 whitespace-nowrap transition hover:opacity-80"
+            >
               <span className="font-medium text-white">{item.symbol}</span>{" "}
               <span className={item.change >= 0 ? "text-emerald-400" : "text-red-400"}>
                 {formatChange(item.change)}
               </span>
-            </span>
+            </Link>
           ))}
         </div>
 
