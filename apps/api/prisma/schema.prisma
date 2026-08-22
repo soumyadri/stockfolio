@@ -1,0 +1,140 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  isDemo       Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  wallet         Wallet?
+  holdings       Holding[]
+  orders         Order[]
+  transactions   Transaction[]
+  watchlistItems WatchlistItem[]
+
+  @@index([createdAt])
+}
+
+model Wallet {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  balance   Decimal  @default(0) @db.Decimal(18, 2)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions WalletTransaction[]
+
+  @@index([userId])
+}
+
+model WalletTransaction {
+  id            String               @id @default(cuid())
+  walletId      String
+  type          WalletTransactionType
+  amount        Decimal              @db.Decimal(18, 2)
+  balanceAfter  Decimal              @db.Decimal(18, 2)
+  reference     String?
+  createdAt     DateTime             @default(now())
+
+  wallet Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  @@index([walletId])
+  @@index([createdAt])
+}
+
+model Holding {
+  id        String   @id @default(cuid())
+  userId    String
+  ticker    String
+  quantity  Decimal  @db.Decimal(18, 6)
+  avgCost   Decimal  @db.Decimal(18, 2)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, ticker])
+  @@index([userId])
+  @@index([ticker])
+  @@index([createdAt])
+}
+
+model Order {
+  id          String      @id @default(cuid())
+  userId      String
+  ticker      String
+  side        OrderSide
+  quantity    Decimal     @db.Decimal(18, 6)
+  status      OrderStatus @default(PENDING)
+  filledPrice Decimal?    @db.Decimal(18, 2)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  @@index([userId])
+  @@index([ticker])
+  @@index([createdAt])
+  @@index([status])
+}
+
+model Transaction {
+  id        String    @id @default(cuid())
+  userId    String
+  orderId   String?
+  ticker    String
+  side      OrderSide
+  quantity  Decimal   @db.Decimal(18, 6)
+  price     Decimal   @db.Decimal(18, 2)
+  createdAt DateTime  @default(now())
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  order Order? @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([ticker])
+  @@index([createdAt])
+  @@index([orderId])
+}
+
+model WatchlistItem {
+  id        String   @id @default(cuid())
+  userId    String
+  ticker    String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, ticker])
+  @@index([userId])
+  @@index([ticker])
+  @@index([createdAt])
+}
+
+enum WalletTransactionType {
+  CREDIT
+  DEBIT
+  RESET
+}
+
+enum OrderSide {
+  BUY
+  SELL
+}
+
+enum OrderStatus {
+  PENDING
+  FILLED
+  CANCELLED
+}
