@@ -8,9 +8,21 @@ interface ModalProps {
   onClose: () => void;
   children: ReactNode;
   className?: string;
+  size?: "md" | "lg";
 }
 
-export function Modal({ isOpen, onClose, children, className = "" }: ModalProps) {
+const sizeClasses = {
+  md: "max-w-md",
+  lg: "max-w-lg",
+};
+
+export function Modal({
+  isOpen,
+  onClose,
+  children,
+  className = "",
+  size = "md",
+}: ModalProps) {
   useEffect(() => {
     if (!isOpen) return;
 
@@ -40,7 +52,7 @@ export function Modal({ isOpen, onClose, children, className = "" }: ModalProps)
       <div
         role="dialog"
         aria-modal="true"
-        className={`relative z-10 w-full max-w-md rounded-2xl border border-slate-700 bg-slate-900 p-6 shadow-2xl ${className}`}
+        className={`relative z-10 w-full ${sizeClasses[size]} rounded-2xl border border-slate-700 bg-slate-900 p-6 shadow-2xl ${className}`}
       >
         {children}
       </div>
