@@ -1,16 +1,19 @@
-import type { StockDetail } from "../../lib/mock/stocks";
+import type { Quote } from "../../lib/types/stock";
 import { formatCurrency } from "../../lib/mock/dashboard";
 
 interface StockStatsProps {
-  stock: StockDetail;
+  quote: Quote;
 }
 
-export function StockStats({ stock }: StockStatsProps) {
+export function StockStats({ quote }: StockStatsProps) {
   const stats = [
-    { label: "Open", value: formatCurrency(stock.open) },
-    { label: "Day range", value: `${formatCurrency(stock.dayLow)}–${formatCurrency(stock.dayHigh)}` },
-    { label: "Market cap", value: stock.marketCap },
-    { label: "You own", value: `${stock.sharesOwned} shares` },
+    { label: "Live price", value: formatCurrency(quote.price) },
+    { label: "Open", value: formatCurrency(quote.open) },
+    {
+      label: "Day range",
+      value: `${formatCurrency(quote.dayLow)}–${formatCurrency(quote.dayHigh)}`,
+    },
+    { label: "You own", value: `${quote.sharesOwned} shares` },
   ];
 
   return (

@@ -1,9 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useAuth } from "../../lib/auth/context";
-import { formatChange, tickerItems } from "../../lib/mock/dashboard";
+import { fetchQuotes } from "../../lib/graphql/quotes";
+import { formatChange } from "../../lib/mock/dashboard";
+import { QUOTE_POLL_INTERVAL_MS, usePolling } from "../../lib/hooks/usePolling";
+import type { Quote } from "../../lib/types/stock";
 import { Avatar, getAvatarUrl } from "../ui/Avatar";
 import { Button } from "../ui/Button";
 import { Logo } from "../ui/Logo";
@@ -68,8 +71,12 @@ function UserMenu() {
   );
 }
 
+const TICKER_SYMBOLS = ["AAPL", "TSLA", "INFY", "RELIANCE", "MSFT"];
+
 export function Header() {
   const { isAuthenticated, openAuthModal } = useAuth();
+  const fetcher = useCallback(() => fetchQuotes(TICKER_SYMBOLS), []);
+  const { data: quotes } = usePolling<Quote[]>(fetcher, QUOTE_POLL_INTERVAL_MS);
 
   return (
     <header className="w-full border-b border-[#1f1f1f] bg-black">
@@ -89,15 +96,16 @@ export function Header() {
         </nav>
 
         <div className="flex min-w-0 flex-1 items-center gap-3 overflow-x-auto border-l border-[#1f1f1f] pl-3 text-xs scrollbar-none sm:gap-5 sm:pl-4 sm:text-sm">
-          {tickerItems.map((item) => (
+          {(quotes ?? TICKER_SYMBOLS.map((symbol) => ({ ticker: symbol, changePercent: 0 }))).map(
+            (item) => (
             <Link
-              key={item.symbol}
-              href={`/stock/${item.symbol}`}
+              key={item.ticker}
+              href={`/stock/${item.ticker}`}
               className="shrink-0 whitespace-nowrap transition hover:opacity-80"
             >
-              <span className="font-medium text-white">{item.symbol}</span>{" "}
-              <span className={item.change >= 0 ? "text-emerald-400" : "text-red-400"}>
-                {formatChange(item.change)}
+              <span className="font-medium text-white">{item.ticker}</span>{" "}
+              <span className={item.changePercent >= 0 ? "text-emerald-400" : "text-red-400"}>
+                {formatChange(item.changePercent)}
               </span>
             </Link>
           ))}

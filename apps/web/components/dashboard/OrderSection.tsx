@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { orderStocks } from "../../lib/mock/dashboard";
+import { useCallback, useEffect, useState } from "react";
+import { useAuth } from "../../lib/auth/context";
+import { placeOrder } from "../../lib/graphql/orders";
+import { fetchStocks } from "../../lib/graphql/quotes";
 import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
 import { NumberInput } from "../ui/NumberInput";
@@ -12,16 +14,48 @@ type OrderSide = "buy" | "sell";
 interface OrderSectionProps {
   selectedStock: string;
   onStockChange: (symbol: string) => void;
+  onOrderPlaced?: () => void;
 }
 
-const stockOptions = orderStocks.map((stock) => ({ value: stock, label: stock }));
-
-export function OrderSection({ selectedStock, onStockChange }: OrderSectionProps) {
+export function OrderSection({ selectedStock, onStockChange, onOrderPlaced }: OrderSectionProps) {
+  const { isAuthenticated, openAuthModal } = useAuth();
   const [side, setSide] = useState<OrderSide>("buy");
   const [quantity, setQuantity] = useState("10");
+  const [stockOptions, setStockOptions] = useState<{ value: string; label: string }[]>([]);
+  const [submitting, setSubmitting] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
 
-  const handlePlaceOrder = () => {
-    // Mock — API integration in a later phase
+  useEffect(() => {
+    fetchStocks()
+      .then((stocks) =>
+        setStockOptions(stocks.map((s) => ({ value: s.ticker, label: s.ticker }))),
+      )
+      .catch(() => setStockOptions([]));
+  }, []);
+
+  const handlePlaceOrder = async () => {
+    if (!isAuthenticated) {
+      openAuthModal("login");
+      return;
+    }
+
+    const qty = Number(quantity);
+    if (!qty || qty <= 0) {
+      setMessage("Enter a valid quantity");
+      return;
+    }
+
+    setSubmitting(true);
+    setMessage(null);
+    try {
+      const result = await placeOrder(selectedStock, side === "buy" ? "BUY" : "SELL", qty);
+      setMessage(`Order filled: ${result.quantity} ${result.ticker} @ $${result.filledPrice}`);
+      onOrderPlaced?.();
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : "Order failed");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -57,14 +91,17 @@ export function OrderSection({ selectedStock, onStockChange }: OrderSectionProps
           value={selectedStock}
           onChange={(e) => onStockChange(e.target.value)}
         />
-        <NumberInput
-          value={quantity}
-          onChange={(e) => setQuantity(e.target.value)}
-        />
+        <NumberInput value={quantity} onChange={(e) => setQuantity(e.target.value)} />
       </div>
 
-      <Button variant="primary" fullWidth onClick={handlePlaceOrder}>
-        Place order
+      {message && (
+        <p className={`mb-3 text-sm ${message.includes("filled") ? "text-emerald-400" : "text-red-400"}`}>
+          {message}
+        </p>
+      )}
+
+      <Button variant="primary" fullWidth onClick={handlePlaceOrder} disabled={submitting}>
+        {submitting ? "Placing…" : "Place order"}
       </Button>
     </Card>
   );

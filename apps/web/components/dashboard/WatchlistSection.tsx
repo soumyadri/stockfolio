@@ -1,13 +1,27 @@
 "use client";
 
 import Link from "next/link";
+import { useCallback, useMemo } from "react";
+import { fetchQuotes } from "../../lib/graphql/quotes";
 import { formatChange, formatCurrency } from "../../lib/mock/dashboard";
-import { getStock } from "../../lib/mock/stocks";
+import { QUOTE_POLL_INTERVAL_MS, usePolling } from "../../lib/hooks/usePolling";
+import type { Quote } from "../../lib/types/stock";
 import { useWatchlist } from "../../lib/watchlist/context";
 import { Card } from "../ui/Card";
 
 export function WatchlistSection() {
   const { symbols } = useWatchlist();
+
+  const fetcher = useCallback(async (): Promise<Quote[]> => {
+    if (symbols.length === 0) return [];
+    return fetchQuotes(symbols);
+  }, [symbols]);
+
+  const { data: quotes } = usePolling(fetcher, QUOTE_POLL_INTERVAL_MS, symbols.length > 0);
+  const quoteMap = useMemo(
+    () => new Map((quotes ?? []).map((q) => [q.ticker, q])),
+    [quotes],
+  );
 
   return (
     <Card title="Watchlist">
@@ -24,8 +38,14 @@ export function WatchlistSection() {
             </div>
 
             {symbols.map((symbol) => {
-              const stock = getStock(symbol);
-              if (!stock) return null;
+              const quote = quoteMap.get(symbol);
+              if (!quote) {
+                return (
+                  <div key={symbol} className="px-1 py-2.5 text-sm text-slate-500">
+                    Loading {symbol}…
+                  </div>
+                );
+              }
 
               return (
                 <div
@@ -38,11 +58,11 @@ export function WatchlistSection() {
                   >
                     {symbol}
                   </Link>
-                  <span className="text-sm text-slate-300">{formatCurrency(stock.price)}</span>
+                  <span className="text-sm text-slate-300">{formatCurrency(quote.price)}</span>
                   <span
-                    className={`text-sm ${stock.changePercent >= 0 ? "text-emerald-400" : "text-red-400"}`}
+                    className={`text-sm ${quote.changePercent >= 0 ? "text-emerald-400" : "text-red-400"}`}
                   >
-                    {formatChange(stock.changePercent)}
+                    {formatChange(quote.changePercent)}
                   </span>
                   <Link
                     href={`/stock/${symbol}`}

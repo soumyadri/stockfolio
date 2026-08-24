@@ -1,7 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { StockDetail } from "../../lib/mock/stocks";
+import { useAuth } from "../../lib/auth/context";
+import { placeOrder } from "../../lib/graphql/orders";
+import type { Quote } from "../../lib/types/stock";
 import { formatCurrency } from "../../lib/mock/dashboard";
 import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
@@ -10,15 +12,36 @@ import { NumberInput } from "../ui/NumberInput";
 type OrderSide = "buy" | "sell";
 
 interface StockTradePanelProps {
-  stock: StockDetail;
+  quote: Quote;
 }
 
-export function StockTradePanel({ stock }: StockTradePanelProps) {
+export function StockTradePanel({ quote }: StockTradePanelProps) {
+  const { isAuthenticated, openAuthModal } = useAuth();
   const [side, setSide] = useState<OrderSide>("buy");
   const [quantity, setQuantity] = useState("10");
+  const [submitting, setSubmitting] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
 
   const qty = Math.max(1, Number(quantity) || 0);
-  const estimatedTotal = useMemo(() => qty * stock.price, [qty, stock.price]);
+  const estimatedTotal = useMemo(() => qty * quote.price, [qty, quote.price]);
+
+  const handlePlaceOrder = async () => {
+    if (!isAuthenticated) {
+      openAuthModal("login");
+      return;
+    }
+
+    setSubmitting(true);
+    setMessage(null);
+    try {
+      const result = await placeOrder(quote.ticker, side === "buy" ? "BUY" : "SELL", qty);
+      setMessage(`Filled ${result.quantity} @ $${result.filledPrice}`);
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : "Order failed");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <Card>
@@ -51,8 +74,14 @@ export function StockTradePanel({ stock }: StockTradePanelProps) {
         </p>
       </div>
 
-      <Button variant="primary" fullWidth className="!py-3">
-        Place order
+      {message && (
+        <p className={`mb-3 text-sm ${message.startsWith("Filled") ? "text-emerald-400" : "text-red-400"}`}>
+          {message}
+        </p>
+      )}
+
+      <Button variant="primary" fullWidth className="!py-3" onClick={handlePlaceOrder} disabled={submitting}>
+        {submitting ? "Placing…" : "Place order"}
       </Button>
     </Card>
   );

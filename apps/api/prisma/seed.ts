@@ -5,9 +5,40 @@ const DEMO_EMAIL = "demo@stockfolio.app";
 const DEMO_PASSWORD = "demo1234";
 const INITIAL_BALANCE = 1000;
 
+const STOCKS = [
+  { ticker: "AAPL", companyName: "Apple Inc.", basePrice: 228.4 },
+  { ticker: "TSLA", companyName: "Tesla Inc.", basePrice: 241.1 },
+  { ticker: "MSFT", companyName: "Microsoft Corp.", basePrice: 415.2 },
+  { ticker: "GOOGL", companyName: "Alphabet Inc.", basePrice: 175.5 },
+  { ticker: "AMZN", companyName: "Amazon.com Inc.", basePrice: 198.3 },
+  { ticker: "NVDA", companyName: "NVIDIA Corp.", basePrice: 875.4 },
+  { ticker: "META", companyName: "Meta Platforms Inc.", basePrice: 512.8 },
+  { ticker: "INFY", companyName: "Infosys Ltd.", basePrice: 1780.0 },
+  { ticker: "RELIANCE", companyName: "Reliance Industries", basePrice: 2940.0 },
+  { ticker: "JPM", companyName: "JPMorgan Chase & Co.", basePrice: 198.6 },
+  { ticker: "V", companyName: "Visa Inc.", basePrice: 278.9 },
+  { ticker: "WMT", companyName: "Walmart Inc.", basePrice: 68.4 },
+  { ticker: "DIS", companyName: "Walt Disney Co.", basePrice: 112.5 },
+  { ticker: "NFLX", companyName: "Netflix Inc.", basePrice: 682.3 },
+  { ticker: "AMD", companyName: "Advanced Micro Devices", basePrice: 156.7 },
+  { ticker: "INTC", companyName: "Intel Corp.", basePrice: 22.8 },
+  { ticker: "BA", companyName: "Boeing Co.", basePrice: 178.2 },
+  { ticker: "KO", companyName: "Coca-Cola Co.", basePrice: 62.4 },
+  { ticker: "PEP", companyName: "PepsiCo Inc.", basePrice: 168.9 },
+  { ticker: "IBM", companyName: "IBM Corp.", basePrice: 215.3 },
+];
+
 const WATCHLIST_TICKERS = ["AAPL", "MSFT", "GOOGL", "AMZN", "TSLA", "NVDA"];
 
 async function main() {
+  for (let i = 0; i < STOCKS.length; i++) {
+    await prisma.stock.upsert({
+      where: { ticker: STOCKS[i].ticker },
+      update: {},
+      create: { ...STOCKS[i], tickerSeed: i * 137 },
+    });
+  }
+
   const passwordHash = await bcrypt.hash(DEMO_PASSWORD, 10);
 
   const user = await prisma.user.upsert({
@@ -49,6 +80,7 @@ async function main() {
   });
 
   console.log("Seed complete:");
+  console.log(`  Stocks:    ${STOCKS.length} tickers`);
   console.log(`  User:      ${user.email} (id: ${user.id})`);
   console.log(`  Wallet:    $${user.wallet?.balance.toString()}`);
   console.log(`  Watchlist: ${user.watchlistItems.map((w) => w.ticker).join(", ")}`);

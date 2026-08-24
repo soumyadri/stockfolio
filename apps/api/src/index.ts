@@ -5,9 +5,12 @@ import express from "express";
 import { createContext } from "./context.js";
 import { resolvers } from "./graphql/resolvers/index.js";
 import { typeDefs } from "./graphql/schema.js";
+import { initStockConfigCache } from "./services/priceService.js";
 
 const app = express();
 const PORT = Number(process.env.PORT) || 4000;
+
+await initStockConfigCache();
 
 const server = new ApolloServer({
   typeDefs,

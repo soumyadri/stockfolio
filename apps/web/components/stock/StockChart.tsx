@@ -1,16 +1,19 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { fetchPriceHistory } from "../../lib/graphql/quotes";
 import {
+  CHART_PERIOD_DAYS,
   CHART_PERIODS,
-  generateChartSeries,
+  STOCK_CHART_POLL_1D_MS,
   type ChartPeriod,
-} from "../../lib/mock/stocks";
+} from "../../lib/types/stock";
 
 interface StockChartProps {
-  symbol: string;
-  price: number;
+  ticker: string;
   isPositive: boolean;
+  period: ChartPeriod;
+  onPeriodChange: (period: ChartPeriod) => void;
 }
 
 function buildPath(values: number[], width: number, height: number): string {
@@ -27,16 +30,34 @@ function buildPath(values: number[], width: number, height: number): string {
     .join(" ");
 }
 
-export function StockChart({ symbol, price, isPositive }: StockChartProps) {
-  const [period, setPeriod] = useState<ChartPeriod>("7d");
+export function StockChart({ ticker, isPositive, period, onPeriodChange }: StockChartProps) {
+  const [series, setSeries] = useState<number[]>([]);
 
-  const series = useMemo(
-    () => generateChartSeries(symbol, period, price),
-    [symbol, period, price],
+  const loadHistory = useCallback(async () => {
+    try {
+      const points = await fetchPriceHistory(ticker, CHART_PERIOD_DAYS[period]);
+      setSeries(points.map((p) => p.price));
+    } catch {
+      setSeries([]);
+    }
+  }, [ticker, period]);
+
+  useEffect(() => {
+    loadHistory();
+  }, [loadHistory]);
+
+  useEffect(() => {
+    if (period !== "1d") return;
+    const id = setInterval(loadHistory, STOCK_CHART_POLL_1D_MS);
+    return () => clearInterval(id);
+  }, [period, loadHistory]);
+
+  const displaySeries = series.length > 0 ? series : [];
+  const linePath = useMemo(
+    () => (displaySeries.length > 1 ? buildPath(displaySeries, 100, 40) : ""),
+    [displaySeries],
   );
-
-  const linePath = useMemo(() => buildPath(series, 100, 40), [series]);
-  const areaPath = `${linePath} L100,40 L0,40 Z`;
+  const areaPath = linePath ? `${linePath} L100,40 L0,40 Z` : "";
   const strokeColor = isPositive ? "#34d399" : "#f87171";
 
   return (
@@ -46,7 +67,7 @@ export function StockChart({ symbol, price, isPositive }: StockChartProps) {
           <button
             key={item.id}
             type="button"
-            onClick={() => setPeriod(item.id)}
+            onClick={() => onPeriodChange(item.id)}
             className={`rounded-lg border px-3 py-1 text-xs font-medium transition-colors sm:text-sm ${
               period === item.id
                 ? "border-blue-500 bg-blue-500/10 text-blue-400"
@@ -60,19 +81,21 @@ export function StockChart({ symbol, price, isPositive }: StockChartProps) {
 
       <svg viewBox="0 0 100 40" className="h-40 w-full sm:h-52" preserveAspectRatio="none">
         <defs>
-          <linearGradient id={`chart-fill-${symbol}`} x1="0" y1="0" x2="0" y2="1">
+          <linearGradient id={`chart-fill-${ticker}`} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor={strokeColor} stopOpacity="0.25" />
             <stop offset="100%" stopColor={strokeColor} stopOpacity="0" />
           </linearGradient>
         </defs>
-        <path d={areaPath} fill={`url(#chart-fill-${symbol})`} />
-        <path
-          d={linePath}
-          fill="none"
-          stroke={strokeColor}
-          strokeWidth="0.6"
-          vectorEffect="non-scaling-stroke"
-        />
+        {areaPath && <path d={areaPath} fill={`url(#chart-fill-${ticker})`} />}
+        {linePath && (
+          <path
+            d={linePath}
+            fill="none"
+            stroke={strokeColor}
+            strokeWidth="0.6"
+            vectorEffect="non-scaling-stroke"
+          />
+        )}
       </svg>
     </div>
   );

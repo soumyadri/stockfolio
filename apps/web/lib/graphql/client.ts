@@ -12,6 +12,7 @@ export async function graphqlRequest<T>(
 ): Promise<T> {
   const response = await fetch(`${API_URL}/graphql`, {
     method: "POST",
+    cache: "no-store",
     headers: {
       "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
