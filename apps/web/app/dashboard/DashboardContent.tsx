@@ -17,10 +17,12 @@ export function DashboardContent() {
   const [selectedStock, setSelectedStock] = useState("AAPL");
   const [refreshKey, setRefreshKey] = useState(0);
   const [portfolio, setPortfolio] = useState<PortfolioSummary | null>(null);
-  const { isAuthenticated } = useAuth();
+  const { authReady, isAuthenticated } = useAuth();
   const { isOpen, dismiss, openSignup } = useWelcomeModal();
 
   useEffect(() => {
+    if (!authReady) return;
+
     if (!isAuthenticated) {
       setPortfolio(null);
       return;
@@ -29,7 +31,7 @@ export function DashboardContent() {
     fetchPortfolio()
       .then(setPortfolio)
       .catch(() => setPortfolio(null));
-  }, [isAuthenticated, refreshKey]);
+  }, [authReady, isAuthenticated, refreshKey]);
 
   const handleOrderPlaced = useCallback(() => {
     setRefreshKey((k) => k + 1);
@@ -44,8 +46,12 @@ export function DashboardContent() {
       />
 
       <main className="w-full py-4 sm:py-6 lg:py-8">
-        <PageContainer className="space-y-4 sm:space-y-5 lg:space-y-6" key={refreshKey}>
-          <PortfolioStats portfolio={portfolio} isAuthenticated={isAuthenticated} />
+        <PageContainer className="space-y-4 sm:space-y-5 lg:space-y-6">
+          <PortfolioStats
+            portfolio={portfolio}
+            isAuthenticated={isAuthenticated}
+            authReady={authReady}
+          />
           <AllocationSection portfolio={portfolio} isAuthenticated={isAuthenticated} />
 
           <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-2 lg:gap-6">
@@ -57,7 +63,7 @@ export function DashboardContent() {
             />
           </div>
 
-          <TransactionHistorySection />
+          <TransactionHistorySection refreshKey={refreshKey} />
         </PageContainer>
       </main>
     </AppLayout>

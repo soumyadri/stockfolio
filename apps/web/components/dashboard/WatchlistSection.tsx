@@ -4,10 +4,28 @@ import Link from "next/link";
 import { useCallback, useMemo } from "react";
 import { fetchQuotes } from "../../lib/graphql/quotes";
 import { formatChange, formatCurrency } from "../../lib/mock/dashboard";
-import { QUOTE_POLL_INTERVAL_MS, usePolling } from "../../lib/hooks/usePolling";
+import {
+  QUOTE_POLL_DEFER_MS,
+  QUOTE_POLL_INTERVAL_MS,
+  usePolling,
+} from "../../lib/hooks/usePolling";
 import type { Quote } from "../../lib/types/stock";
 import { useWatchlist } from "../../lib/watchlist/context";
 import { Card } from "../ui/Card";
+
+function WatchlistRowSkeleton({ symbol }: { symbol: string }) {
+  return (
+    <div
+      className="grid min-h-[2.75rem] grid-cols-[1fr_1fr_1fr_auto] items-center gap-2 rounded-lg px-1 py-2.5"
+      aria-hidden
+    >
+      <span className="text-sm font-medium text-slate-500">{symbol}</span>
+      <span className="text-sm tabular-nums text-slate-600">—</span>
+      <span className="text-sm tabular-nums text-slate-600">—</span>
+      <span className="inline-block h-7 w-14 rounded-lg bg-[#1a1a1a] sm:w-16" />
+    </div>
+  );
+}
 
 export function WatchlistSection() {
   const { symbols } = useWatchlist();
@@ -17,7 +35,12 @@ export function WatchlistSection() {
     return fetchQuotes(symbols);
   }, [symbols]);
 
-  const { data: quotes } = usePolling(fetcher, QUOTE_POLL_INTERVAL_MS, symbols.length > 0);
+  const { data: quotes } = usePolling(
+    fetcher,
+    QUOTE_POLL_INTERVAL_MS,
+    symbols.length > 0,
+    QUOTE_POLL_DEFER_MS,
+  );
   const quoteMap = useMemo(
     () => new Map((quotes ?? []).map((q) => [q.ticker, q])),
     [quotes],
@@ -40,32 +63,34 @@ export function WatchlistSection() {
             {symbols.map((symbol) => {
               const quote = quoteMap.get(symbol);
               if (!quote) {
-                return (
-                  <div key={symbol} className="px-1 py-2.5 text-sm text-slate-500">
-                    Loading {symbol}…
-                  </div>
-                );
+                return <WatchlistRowSkeleton key={symbol} symbol={symbol} />;
               }
 
               return (
                 <div
                   key={symbol}
-                  className="grid grid-cols-[1fr_1fr_1fr_auto] items-center gap-2 rounded-lg px-1 py-2.5 hover:bg-[#1a1a1a]"
+                  className="grid min-h-[2.75rem] grid-cols-[1fr_1fr_1fr_auto] items-center gap-2 rounded-lg px-1 py-2.5 hover:bg-[#1a1a1a]"
                 >
                   <Link
                     href={`/stock/${symbol}`}
+                    aria-label={`View ${symbol} stock details`}
                     className="text-sm font-medium text-white hover:text-blue-400"
                   >
                     {symbol}
                   </Link>
-                  <span className="text-sm text-slate-300">{formatCurrency(quote.price)}</span>
+                  <span className="text-sm tabular-nums text-slate-300">
+                    {formatCurrency(quote.price)}
+                  </span>
                   <span
-                    className={`text-sm ${quote.changePercent >= 0 ? "text-emerald-400" : "text-red-400"}`}
+                    className={`text-sm tabular-nums ${
+                      quote.changePercent >= 0 ? "text-emerald-400" : "text-red-400"
+                    }`}
                   >
                     {formatChange(quote.changePercent)}
                   </span>
                   <Link
                     href={`/stock/${symbol}`}
+                    aria-label={`Trade ${symbol}`}
                     className="w-14 rounded-lg border border-[#3a3a3a] px-2 py-1 text-center text-xs font-medium text-slate-200 hover:border-[#555] hover:bg-[#1a1a1a] sm:w-16"
                   >
                     Trade

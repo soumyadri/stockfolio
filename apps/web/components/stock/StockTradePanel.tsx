@@ -121,7 +121,7 @@ export function StockTradePanel({ quote, onOrderPlaced }: StockTradePanelProps) 
   return (
     <>
       <Card>
-        <div className="mb-4 grid grid-cols-2 gap-3">
+        <div className="mb-4 grid grid-cols-2 gap-3" role="group" aria-label="Order side">
           {(["buy", "sell"] as const).map((value) => (
             <button
               key={value}
@@ -140,9 +140,14 @@ export function StockTradePanel({ quote, onOrderPlaced }: StockTradePanelProps) 
           ))}
         </div>
 
-        <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-end">
           <div className="sm:flex-1">
-            <NumberInput value={quantity} onChange={(e) => setQuantity(e.target.value)} />
+            <NumberInput
+              label="Quantity"
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value)}
+              min={1}
+            />
           </div>
           <p className="text-sm text-slate-400 sm:shrink-0">
             Est. total:{" "}

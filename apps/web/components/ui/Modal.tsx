@@ -30,11 +30,11 @@ export function Modal({
       if (event.key === "Escape") onClose();
     };
 
-    document.body.style.overflow = "hidden";
+    document.documentElement.classList.add("modal-open");
     document.addEventListener("keydown", onKeyDown);
 
     return () => {
-      document.body.style.overflow = "";
+      document.documentElement.classList.remove("modal-open");
       document.removeEventListener("keydown", onKeyDown);
     };
   }, [isOpen, onClose]);

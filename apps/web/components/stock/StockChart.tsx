@@ -62,7 +62,7 @@ export function StockChart({ ticker, isPositive, period, onPeriodChange }: Stock
 
   return (
     <div className="rounded-xl border border-[#2a2a2a] bg-[#111111] p-4 sm:p-5">
-      <div className="mb-4 flex flex-wrap gap-2">
+      <div className="mb-4 flex flex-wrap gap-2" role="group" aria-label="Chart time period">
         {CHART_PERIODS.map((item) => (
           <button
             key={item.id}

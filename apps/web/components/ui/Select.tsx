@@ -1,4 +1,4 @@
-import type { SelectHTMLAttributes } from "react";
+import { useId, type SelectHTMLAttributes } from "react";
 import { fieldClassName } from "./fieldStyles";
 
 export interface SelectOption {
@@ -11,8 +11,13 @@ interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   label?: string;
 }
 
+function slugifyLabel(label: string): string {
+  return label.toLowerCase().replace(/\s+/g, "-");
+}
+
 export function Select({ options, label, id, className = "", ...props }: SelectProps) {
-  const selectId = id ?? (label ? label.toLowerCase().replace(/\s+/g, "-") : undefined);
+  const generatedId = useId();
+  const selectId = id ?? (label ? `${generatedId}-${slugifyLabel(label)}` : generatedId);
 
   const select = (
     <div className="relative">
@@ -27,7 +32,7 @@ export function Select({ options, label, id, className = "", ...props }: SelectP
           </option>
         ))}
       </select>
-      <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-500">
+      <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-500" aria-hidden>
         ▾
       </span>
     </div>

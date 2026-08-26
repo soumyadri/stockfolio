@@ -1,4 +1,4 @@
-import type { InputHTMLAttributes } from "react";
+import { useId, type InputHTMLAttributes } from "react";
 import { authFieldClassName, fieldClassName } from "./fieldStyles";
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -6,8 +6,13 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   variant?: "default" | "auth";
 }
 
+function slugifyLabel(label: string): string {
+  return label.toLowerCase().replace(/\s+/g, "-");
+}
+
 export function Input({ label, id, variant = "auth", className = "", ...props }: InputProps) {
-  const inputId = id ?? (label ? label.toLowerCase().replace(/\s+/g, "-") : undefined);
+  const generatedId = useId();
+  const inputId = id ?? (label ? `${generatedId}-${slugifyLabel(label)}` : generatedId);
   const styles = variant === "auth" ? authFieldClassName : fieldClassName;
 
   const input = (

@@ -6,7 +6,11 @@ import { fetchTransactions, type TransactionItem } from "../../lib/graphql/portf
 import { formatCurrency } from "../../lib/mock/dashboard";
 import { Card } from "../ui/Card";
 
-export function TransactionHistorySection() {
+interface TransactionHistorySectionProps {
+  refreshKey?: number;
+}
+
+export function TransactionHistorySection({ refreshKey = 0 }: TransactionHistorySectionProps) {
   const { isAuthenticated } = useAuth();
   const [transactions, setTransactions] = useState<TransactionItem[] | null>(null);
 
@@ -19,7 +23,7 @@ export function TransactionHistorySection() {
     fetchTransactions()
       .then(setTransactions)
       .catch(() => setTransactions([]));
-  }, [isAuthenticated]);
+  }, [isAuthenticated, refreshKey]);
 
   return (
     <Card title="Transaction history">

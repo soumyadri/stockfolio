@@ -11,14 +11,19 @@ import {
 } from "react";
 import { clearAuth, getStoredToken, getStoredUser, storeAuth } from "./token";
 import type { AuthUser } from "../graphql/auth";
-import { AuthModal } from "../../components/auth/AuthModal";
 
 type AuthMode = "login" | "signup";
 
 interface AuthContextValue {
   user: AuthUser | null;
   isAuthenticated: boolean;
+  authReady: boolean;
+  modalOpen: boolean;
+  modalMode: AuthMode;
   openAuthModal: (mode?: AuthMode) => void;
+  closeAuthModal: () => void;
+  setModalMode: (mode: AuthMode) => void;
+  handleAuthSuccess: (token: string, authUser: AuthUser) => void;
   logout: () => void;
 }
 
@@ -26,11 +31,13 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [authReady, setAuthReady] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<AuthMode>("login");
 
   useEffect(() => {
     setUser(getStoredUser());
+    setAuthReady(true);
   }, []);
 
   const handleAuthSuccess = useCallback((token: string, authUser: AuthUser) => {
@@ -44,6 +51,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setModalOpen(true);
   }, []);
 
+  const closeAuthModal = useCallback(() => {
+    setModalOpen(false);
+  }, []);
+
   const logout = useCallback(() => {
     clearAuth();
     setUser(null);
@@ -52,25 +63,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value = useMemo(
     () => ({
       user,
+      authReady,
       isAuthenticated: Boolean(user && getStoredToken()),
+      modalOpen,
+      modalMode,
       openAuthModal,
+      closeAuthModal,
+      setModalMode,
+      handleAuthSuccess,
       logout,
     }),
-    [user, openAuthModal, logout],
+    [user, authReady, modalOpen, modalMode, openAuthModal, closeAuthModal, handleAuthSuccess, logout],
   );
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-      <AuthModal
-        isOpen={modalOpen}
-        mode={modalMode}
-        onClose={() => setModalOpen(false)}
-        onModeChange={setModalMode}
-        onSuccess={handleAuthSuccess}
-      />
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth(): AuthContextValue {

@@ -141,7 +141,7 @@ export function OrderSection({ selectedStock, onStockChange, onOrderPlaced }: Or
   return (
     <>
       <Card title="Place an order">
-        <div className="mb-4 grid grid-cols-2 gap-3">
+        <div className="mb-4 grid grid-cols-2 gap-3" role="group" aria-label="Order side">
           <button
             type="button"
             onClick={() => setSide("buy")}
@@ -168,11 +168,17 @@ export function OrderSection({ selectedStock, onStockChange, onOrderPlaced }: Or
 
         <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
           <Select
+            label="Stock"
             options={stockOptions}
             value={selectedStock}
             onChange={(e) => onStockChange(e.target.value)}
           />
-          <NumberInput value={quantity} onChange={(e) => setQuantity(e.target.value)} />
+          <NumberInput
+            label="Quantity"
+            value={quantity}
+            onChange={(e) => setQuantity(e.target.value)}
+            min={1}
+          />
         </div>
 
         {isAuthenticated && portfolio && (

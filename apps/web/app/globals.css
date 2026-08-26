@@ -12,6 +12,21 @@ body {
   background: var(--background);
 }
 
+html.modal-open,
+html.modal-open body {
+  overflow: hidden;
+}
+
+@layer utilities {
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .metric-value {
+    @apply tabular-nums min-h-[2rem] sm:min-h-[2.25rem] lg:min-h-[2.5rem];
+  }
+}
+
 .scrollbar-none {
   -ms-overflow-style: none;
   scrollbar-width: none;

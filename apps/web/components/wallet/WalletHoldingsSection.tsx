@@ -3,7 +3,11 @@
 import { useCallback, useEffect, useMemo } from "react";
 import type { HoldingItem } from "../../lib/graphql/wallet";
 import { fetchQuotes } from "../../lib/graphql/quotes";
-import { QUOTE_POLL_INTERVAL_MS, usePolling } from "../../lib/hooks/usePolling";
+import {
+  QUOTE_POLL_DEFER_MS,
+  QUOTE_POLL_INTERVAL_MS,
+  usePolling,
+} from "../../lib/hooks/usePolling";
 import { formatCurrency } from "../../lib/mock/dashboard";
 import { Card } from "../ui/Card";
 
@@ -23,7 +27,12 @@ export function WalletHoldingsSection({
     return fetchQuotes(tickers);
   }, [tickers]);
 
-  const { data: quotes } = usePolling(fetcher, QUOTE_POLL_INTERVAL_MS, tickers.length > 0);
+  const { data: quotes } = usePolling(
+    fetcher,
+    QUOTE_POLL_INTERVAL_MS,
+    tickers.length > 0,
+    QUOTE_POLL_DEFER_MS,
+  );
 
   const priceMap = useMemo(
     () => new Map((quotes ?? []).map((q) => [q.ticker, q.price])),
