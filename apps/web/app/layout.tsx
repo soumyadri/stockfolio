@@ -1,7 +1,8 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { AuthProvider } from "../lib/auth/context";
 import { WatchlistProvider } from "../lib/watchlist/context";
+import { rootMetadata } from "../lib/site/metadata";
 import "./globals.css";
 
 const inter = Inter({
@@ -9,9 +10,13 @@ const inter = Inter({
   display: "swap",
 });
 
-export const metadata: Metadata = {
-  title: "Stockfolio",
-  description: "Paper trading portfolio tracker",
+export const metadata: Metadata = rootMetadata;
+
+export const viewport: Viewport = {
+  themeColor: "#0a0a0a",
+  colorScheme: "dark",
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
