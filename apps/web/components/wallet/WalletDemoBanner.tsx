@@ -5,7 +5,8 @@ export function WalletDemoBanner() {
         i
       </span>
       <p className="text-sm leading-relaxed text-blue-300">
-        This is a demo wallet with mock money. Nothing here is real currency.
+        Paper trading wallet — balances and ledger entries reflect your simulated trades, not real
+        money.
       </p>
     </div>
   );

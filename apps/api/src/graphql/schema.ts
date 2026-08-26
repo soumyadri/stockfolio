@@ -69,6 +69,26 @@ export const typeDefs = `#graphql
     total: Float!
   }
 
+  type WalletLedgerEntry {
+    id: ID!
+    date: String!
+    type: String!
+    amount: Float!
+    balanceAfter: Float!
+    reference: String
+  }
+
+  type WalletDetails {
+    cashBalance: Float!
+    holdingsValue: Float!
+    totalValue: Float!
+    todayGain: Float!
+    totalReturnPercent: Float!
+    holdings: [HoldingItem!]!
+    ledger: [WalletLedgerEntry!]!
+    trades: [TransactionItem!]!
+  }
+
   type Query {
     me: User
     stocks: [Stock!]!
@@ -78,6 +98,7 @@ export const typeDefs = `#graphql
     watchlistQuotes: [Quote!]!
     portfolio: PortfolioSummary!
     transactions: [TransactionItem!]!
+    wallet: WalletDetails!
   }
 
   enum OrderSide {

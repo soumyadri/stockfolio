@@ -31,6 +31,15 @@ export function StockPageContent({ symbol }: StockPageContentProps) {
     return quotes[0];
   }, [symbol]);
 
+  const refreshQuote = useCallback(async () => {
+    try {
+      const quote = await loadQuote();
+      setLiveQuote(quote);
+    } catch {
+      // keep existing quote on refresh failure
+    }
+  }, [loadQuote]);
+
   useEffect(() => {
     setLiveQuote(null);
     setError(null);
@@ -105,7 +114,7 @@ export function StockPageContent({ symbol }: StockPageContentProps) {
             onPeriodChange={setChartPeriod}
           />
           <StockStats quote={liveQuote} />
-          <StockTradePanel quote={liveQuote} />
+          <StockTradePanel quote={liveQuote} onOrderPlaced={refreshQuote} />
         </PageContainer>
       </main>
     </AppLayout>
