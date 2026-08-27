@@ -4,11 +4,14 @@ A full-stack **paper trading** web application for managing a virtual stock port
 
 Built as a portfolio project demonstrating modern monorepo architecture, a GraphQL API, JWT authentication, and database-backed trading flows.
 
+📖 **[Full documentation →](./docs/README.md)** — architecture, GraphQL API reference, features, accessibility, performance, and more.
+
 ---
 
 ## Table of Contents
 
 - [Features](#features)
+- [Documentation](#documentation)
 - [Architecture](#architecture)
 - [Tech Stack](#tech-stack)
 - [Project Structure](#project-structure)
@@ -55,6 +58,27 @@ Built as a portfolio project demonstrating modern monorepo architecture, a Graph
 - Accessibility pass (WCAG AA)
 - E2E tests (Playwright) + CI (GitHub Actions)
 - Deployment (Vercel + Render + Neon)
+
+---
+
+## Documentation
+
+Detailed documentation lives in the [`docs/`](./docs/README.md) folder:
+
+| Doc | Topic |
+|-----|-------|
+| [Overview](./docs/01-overview.md) | Purpose, concepts, tech summary |
+| [Architecture](./docs/02-architecture.md) | System design, request flow, monorepo layout |
+| [Getting Started](./docs/03-getting-started.md) | Install, configure, run, troubleshoot |
+| [Database](./docs/04-database.md) | Models, migrations, seed data |
+| [GraphQL API](./docs/05-graphql-api.md) | Full query/mutation reference |
+| [Backend](./docs/06-backend.md) | Server, auth, services, resolvers |
+| [Frontend](./docs/07-frontend.md) | Routes, components, state management |
+| [Features](./docs/08-features.md) | Feature walkthroughs end to end |
+| [Accessibility](./docs/09-accessibility.md) | A11y patterns and gaps |
+| [Performance](./docs/10-performance.md) | Optimizations and polling strategy |
+| [Development Guide](./docs/11-development.md) | How to extend the project |
+| [Roadmap & Limitations](./docs/12-roadmap-and-limitations.md) | Known gaps and future work |
 
 ---
 
