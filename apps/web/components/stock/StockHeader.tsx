@@ -1,17 +1,27 @@
 "use client";
 
+import { useAuth } from "../../lib/auth/context";
 import { useWatchlist } from "../../lib/watchlist/context";
 import type { Quote } from "../../lib/types/stock";
-import { formatChange, formatCurrency } from "../../lib/mock/dashboard";
+import { formatChange, formatCurrency } from "../../lib/utils/format";
 
 interface StockHeaderProps {
   quote: Quote;
 }
 
 export function StockHeader({ quote }: StockHeaderProps) {
+  const { isAuthenticated, openAuthModal } = useAuth();
   const { isWatching, toggle } = useWatchlist();
   const watching = isWatching(quote.ticker);
   const isPositive = quote.changePercent >= 0;
+
+  const handleWatchToggle = () => {
+    if (!isAuthenticated) {
+      openAuthModal("login");
+      return;
+    }
+    toggle(quote.ticker);
+  };
 
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -31,7 +41,7 @@ export function StockHeader({ quote }: StockHeaderProps) {
 
       <button
         type="button"
-        onClick={() => toggle(quote.ticker)}
+        onClick={handleWatchToggle}
         className={`flex shrink-0 items-center gap-2 self-start rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${
           watching
             ? "border-amber-500/50 bg-amber-500/10 text-amber-400"

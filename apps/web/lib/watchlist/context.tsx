@@ -9,10 +9,16 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { getWatchlist, saveWatchlist } from "./storage";
+import { useAuth } from "../auth/context";
+import {
+  addToWatchlist as addToWatchlistApi,
+  fetchWatchlist,
+  removeFromWatchlist as removeFromWatchlistApi,
+} from "../graphql/watchlist";
 
 interface WatchlistContextValue {
   symbols: string[];
+  isReady: boolean;
   isWatching: (symbol: string) => boolean;
   toggle: (symbol: string) => void;
 }
@@ -20,16 +26,46 @@ interface WatchlistContextValue {
 const WatchlistContext = createContext<WatchlistContextValue | null>(null);
 
 export function WatchlistProvider({ children }: { children: ReactNode }) {
+  const { isAuthenticated, authReady } = useAuth();
   const [symbols, setSymbols] = useState<string[]>([]);
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    setSymbols(getWatchlist());
-  }, []);
+    if (!authReady) return;
 
-  const persist = useCallback((next: string[]) => {
-    setSymbols(next);
-    saveWatchlist(next);
-  }, []);
+    let cancelled = false;
+
+    const load = async () => {
+      setIsReady(false);
+
+      if (!isAuthenticated) {
+        setSymbols([]);
+        setIsReady(true);
+        return;
+      }
+
+      try {
+        const tickers = await fetchWatchlist();
+        if (!cancelled) {
+          setSymbols(tickers);
+        }
+      } catch {
+        if (!cancelled) {
+          setSymbols([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsReady(true);
+        }
+      }
+    };
+
+    void load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authReady, isAuthenticated]);
 
   const isWatching = useCallback(
     (symbol: string) => symbols.includes(symbol.toUpperCase()),
@@ -38,18 +74,25 @@ export function WatchlistProvider({ children }: { children: ReactNode }) {
 
   const toggle = useCallback(
     (symbol: string) => {
+      if (!isAuthenticated) return;
+
       const upper = symbol.toUpperCase();
-      const next = isWatching(upper)
-        ? symbols.filter((s) => s !== upper)
-        : [...symbols, upper];
-      persist(next);
+      const remove = isWatching(upper);
+
+      const request = remove ? removeFromWatchlistApi(upper) : addToWatchlistApi(upper);
+
+      void request
+        .then(setSymbols)
+        .catch(() => {
+          // keep current state on failure
+        });
     },
-    [symbols, isWatching, persist],
+    [isAuthenticated, isWatching],
   );
 
   const value = useMemo(
-    () => ({ symbols, isWatching, toggle }),
-    [symbols, isWatching, toggle],
+    () => ({ symbols, isReady, isWatching, toggle }),
+    [symbols, isReady, isWatching, toggle],
   );
 
   return <WatchlistContext.Provider value={value}>{children}</WatchlistContext.Provider>;

@@ -1,4 +1,4 @@
-import { formatCurrency } from "../mock/dashboard";
+import { formatCurrency } from "../utils/format";
 
 export function validateBuyOrder(cashBalance: number, orderTotal: number): string | null {
   if (orderTotal <= 0) {

@@ -7,7 +7,7 @@ export const orderResolvers = {
   Mutation: {
     placeOrder: async (
       _parent: unknown,
-      args: { ticker: string; side: OrderSide; quantity: number },
+      args: { ticker: string; side: OrderSide; quantity: number; confirmedPrice: number },
       context: GraphQLContext,
     ) => {
       const userId = requireAuth(context);
@@ -17,6 +17,7 @@ export const orderResolvers = {
         args.ticker,
         args.side,
         args.quantity,
+        args.confirmedPrice,
       );
 
       return {

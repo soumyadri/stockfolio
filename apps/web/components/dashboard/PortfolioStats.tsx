@@ -1,6 +1,6 @@
 "use client";
 
-import { formatCurrency, formatSignedCurrency } from "../../lib/mock/dashboard";
+import { formatCurrency, formatSignedCurrency } from "../../lib/utils/format";
 import type { PortfolioSummary } from "../../lib/graphql/portfolio";
 import { Card } from "../ui/Card";
 

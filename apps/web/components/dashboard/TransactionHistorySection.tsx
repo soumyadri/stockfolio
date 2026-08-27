@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../../lib/auth/context";
 import { fetchTransactions, type TransactionItem } from "../../lib/graphql/portfolio";
-import { formatCurrency } from "../../lib/mock/dashboard";
+import { formatCurrency } from "../../lib/utils/format";
 import { Card } from "../ui/Card";
 
 interface TransactionHistorySectionProps {

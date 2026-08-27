@@ -8,7 +8,7 @@ import { placeOrder, type OrderResult } from "../../lib/graphql/orders";
 import { fetchPortfolio, type PortfolioSummary } from "../../lib/graphql/portfolio";
 import { validateBuyOrder, validateSellOrder } from "../../lib/order/validateOrder";
 import type { Quote } from "../../lib/types/stock";
-import { formatCurrency } from "../../lib/mock/dashboard";
+import { formatCurrency } from "../../lib/utils/format";
 import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
 import { NumberInput } from "../ui/NumberInput";
@@ -31,6 +31,7 @@ export function StockTradePanel({ quote, onOrderPlaced }: StockTradePanelProps) 
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [feedbackVariant, setFeedbackVariant] = useState<"success" | "error">("success");
   const [feedbackMessage, setFeedbackMessage] = useState("");
+  const [confirmedPrice, setConfirmedPrice] = useState(0);
   const [filledOrder, setFilledOrder] = useState<OrderResult | undefined>();
 
   const qty = Math.max(0, Number(quantity) || 0);
@@ -96,13 +97,19 @@ export function StockTradePanel({ quote, onOrderPlaced }: StockTradePanelProps) 
       return;
     }
 
+    setConfirmedPrice(quote.price);
     setConfirmOpen(true);
   };
 
   const handleConfirmOrder = async () => {
     setSubmitting(true);
     try {
-      const result = await placeOrder(quote.ticker, side === "buy" ? "BUY" : "SELL", qty);
+      const result = await placeOrder(
+        quote.ticker,
+        side === "buy" ? "BUY" : "SELL",
+        qty,
+        confirmedPrice,
+      );
       setConfirmOpen(false);
       setFilledOrder(result);
       setFeedbackVariant("success");
@@ -179,7 +186,7 @@ export function StockTradePanel({ quote, onOrderPlaced }: StockTradePanelProps) 
         ticker={quote.ticker}
         side={side}
         quantity={qty}
-        price={quote.price}
+        price={confirmedPrice}
         onConfirm={() => void handleConfirmOrder()}
         onCancel={() => setConfirmOpen(false)}
         submitting={submitting}

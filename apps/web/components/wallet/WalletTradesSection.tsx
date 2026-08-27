@@ -1,5 +1,5 @@
 import type { TransactionItem } from "../../lib/graphql/wallet";
-import { formatCurrency } from "../../lib/mock/dashboard";
+import { formatCurrency } from "../../lib/utils/format";
 import { Card } from "../ui/Card";
 
 interface WalletTradesSectionProps {

@@ -9,6 +9,7 @@ import { initStockConfigCache } from "./services/priceService.js";
 
 const app = express();
 const PORT = Number(process.env.PORT) || 4000;
+const CORS_ORIGIN = process.env.CORS_ORIGIN ?? "http://localhost:3000";
 
 await initStockConfigCache();
 
@@ -25,7 +26,7 @@ app.get("/health", (_req, res) => {
 
 app.use(
   "/graphql",
-  cors(),
+  cors({ origin: CORS_ORIGIN }),
   express.json(),
   expressMiddleware(server, {
     context: async ({ req }) => createContext(req),

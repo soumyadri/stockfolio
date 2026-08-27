@@ -8,7 +8,7 @@ import {
   QUOTE_POLL_INTERVAL_MS,
   usePolling,
 } from "../../lib/hooks/usePolling";
-import { formatCurrency } from "../../lib/mock/dashboard";
+import { formatCurrency } from "../../lib/utils/format";
 import { Card } from "../ui/Card";
 
 interface WalletHoldingsSectionProps {

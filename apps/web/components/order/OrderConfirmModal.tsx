@@ -1,6 +1,6 @@
 "use client";
 
-import { formatCurrency } from "../../lib/mock/dashboard";
+import { formatCurrency } from "../../lib/utils/format";
 import { Button } from "../ui/Button";
 import { Modal } from "../ui/Modal";
 

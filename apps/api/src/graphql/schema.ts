@@ -96,6 +96,7 @@ export const typeDefs = `#graphql
     quotes(tickers: [String!]!): [Quote!]!
     priceHistory(ticker: String!, days: Int!): [PricePoint!]!
     watchlistQuotes: [Quote!]!
+    watchlist: [String!]!
     portfolio: PortfolioSummary!
     transactions: [TransactionItem!]!
     wallet: WalletDetails!
@@ -109,6 +110,13 @@ export const typeDefs = `#graphql
   type Mutation {
     register(email: String!, password: String!): AuthPayload!
     login(email: String!, password: String!): AuthPayload!
-    placeOrder(ticker: String!, side: OrderSide!, quantity: Float!): OrderResult!
+    placeOrder(
+      ticker: String!
+      side: OrderSide!
+      quantity: Float!
+      confirmedPrice: Float!
+    ): OrderResult!
+    addToWatchlist(ticker: String!): [String!]!
+    removeFromWatchlist(ticker: String!): [String!]!
   }
 `;

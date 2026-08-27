@@ -1,5 +1,5 @@
 import type { WalletLedgerEntry } from "../../lib/graphql/wallet";
-import { formatCurrency, formatSignedCurrency } from "../../lib/mock/dashboard";
+import { formatCurrency, formatSignedCurrency } from "../../lib/utils/format";
 import { Card } from "../ui/Card";
 
 interface WalletActivitySectionProps {

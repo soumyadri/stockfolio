@@ -1,5 +1,5 @@
 import type { Quote } from "../../lib/types/stock";
-import { formatCurrency } from "../../lib/mock/dashboard";
+import { formatCurrency } from "../../lib/utils/format";
 
 interface StockStatsProps {
   quote: Quote;

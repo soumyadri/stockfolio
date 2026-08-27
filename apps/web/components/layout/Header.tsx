@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useCallback, useState } from "react";
 import { useAuth } from "../../lib/auth/context";
 import { fetchQuotes } from "../../lib/graphql/quotes";
-import { formatChange } from "../../lib/mock/dashboard";
+import { formatChange } from "../../lib/utils/format";
 import { QUOTE_POLL_DEFER_MS, QUOTE_POLL_INTERVAL_MS, usePolling } from "../../lib/hooks/usePolling";
 import type { Quote } from "../../lib/types/stock";
 import { Avatar } from "../ui/Avatar";

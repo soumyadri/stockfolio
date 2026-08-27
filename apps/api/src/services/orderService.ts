@@ -2,19 +2,38 @@ import type { OrderSide, PrismaClient } from "@prisma/client";
 import { badUserInput } from "../graphql/errors.js";
 import { getCurrentPrice } from "./priceService.js";
 
+/** Max drift between confirmed UI price and current market price (0.5%). */
+const PRICE_TOLERANCE = 0.005;
+
+async function assertConfirmedPrice(ticker: string, confirmedPrice: number): Promise<void> {
+  if (confirmedPrice <= 0) {
+    throw badUserInput("Invalid price");
+  }
+
+  const currentPrice = await getCurrentPrice(ticker);
+  const drift = Math.abs(currentPrice - confirmedPrice) / confirmedPrice;
+
+  if (drift > PRICE_TOLERANCE) {
+    throw badUserInput("Price has changed. Please review your order and try again.");
+  }
+}
+
 export async function placeOrder(
   prisma: PrismaClient,
   userId: string,
   ticker: string,
   side: OrderSide,
   quantity: number,
+  confirmedPrice: number,
 ) {
   if (quantity <= 0) {
     throw badUserInput("Quantity must be greater than zero");
   }
 
   const normalizedTicker = ticker.toUpperCase();
-  const price = await getCurrentPrice(normalizedTicker);
+  await assertConfirmedPrice(normalizedTicker, confirmedPrice);
+
+  const price = confirmedPrice;
   const total = +(price * quantity).toFixed(2);
 
   return prisma.$transaction(async (tx) => {

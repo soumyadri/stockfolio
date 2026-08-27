@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { OrderConfirmModal } from "../order/OrderConfirmModal";
 import { OrderFeedbackModal } from "../order/OrderFeedbackModal";
 import { useAuth } from "../../lib/auth/context";
@@ -8,7 +8,7 @@ import { placeOrder, type OrderResult } from "../../lib/graphql/orders";
 import { fetchPortfolio, type PortfolioSummary } from "../../lib/graphql/portfolio";
 import { fetchQuotes, fetchStocks } from "../../lib/graphql/quotes";
 import { validateBuyOrder, validateSellOrder } from "../../lib/order/validateOrder";
-import { formatCurrency } from "../../lib/mock/dashboard";
+import { formatCurrency } from "../../lib/utils/format";
 import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
 import { NumberInput } from "../ui/NumberInput";
@@ -35,10 +35,10 @@ export function OrderSection({ selectedStock, onStockChange, onOrderPlaced }: Or
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [feedbackVariant, setFeedbackVariant] = useState<"success" | "error">("success");
   const [feedbackMessage, setFeedbackMessage] = useState("");
+  const [confirmedPrice, setConfirmedPrice] = useState(0);
   const [filledOrder, setFilledOrder] = useState<OrderResult | undefined>();
 
   const qty = Math.max(0, Number(quantity) || 0);
-  const estimatedTotal = useMemo(() => qty * currentPrice, [qty, currentPrice]);
 
   useEffect(() => {
     fetchQuotes([selectedStock])
@@ -116,13 +116,19 @@ export function OrderSection({ selectedStock, onStockChange, onOrderPlaced }: Or
       return;
     }
 
+    setConfirmedPrice(price);
     setConfirmOpen(true);
   };
 
   const handleConfirmOrder = async () => {
     setSubmitting(true);
     try {
-      const result = await placeOrder(selectedStock, side === "buy" ? "BUY" : "SELL", qty);
+      const result = await placeOrder(
+        selectedStock,
+        side === "buy" ? "BUY" : "SELL",
+        qty,
+        confirmedPrice,
+      );
       setConfirmOpen(false);
       setFilledOrder(result);
       setFeedbackVariant("success");
@@ -204,7 +210,7 @@ export function OrderSection({ selectedStock, onStockChange, onOrderPlaced }: Or
         ticker={selectedStock}
         side={side}
         quantity={qty}
-        price={currentPrice}
+        price={confirmedPrice}
         onConfirm={() => void handleConfirmOrder()}
         onCancel={() => setConfirmOpen(false)}
         submitting={submitting}

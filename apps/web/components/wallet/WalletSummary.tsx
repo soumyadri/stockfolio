@@ -1,4 +1,4 @@
-import { formatCurrency } from "../../lib/mock/dashboard";
+import { formatCurrency } from "../../lib/utils/format";
 import { SummaryMetric } from "../ui/SummaryMetric";
 
 interface WalletSummaryProps {

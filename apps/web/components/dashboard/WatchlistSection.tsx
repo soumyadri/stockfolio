@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { useCallback, useMemo } from "react";
 import { fetchQuotes } from "../../lib/graphql/quotes";
-import { formatChange, formatCurrency } from "../../lib/mock/dashboard";
+import { formatChange, formatCurrency } from "../../lib/utils/format";
 import {
   QUOTE_POLL_DEFER_MS,
   QUOTE_POLL_INTERVAL_MS,
   usePolling,
 } from "../../lib/hooks/usePolling";
 import type { Quote } from "../../lib/types/stock";
+import { useAuth } from "../../lib/auth/context";
 import { useWatchlist } from "../../lib/watchlist/context";
 import { Card } from "../ui/Card";
 
@@ -28,6 +29,7 @@ function WatchlistRowSkeleton({ symbol }: { symbol: string }) {
 }
 
 export function WatchlistSection() {
+  const { isAuthenticated } = useAuth();
   const { symbols } = useWatchlist();
 
   const fetcher = useCallback(async (): Promise<Quote[]> => {
@@ -49,7 +51,11 @@ export function WatchlistSection() {
   return (
     <Card title="Watchlist">
       {symbols.length === 0 ? (
-        <p className="text-sm text-slate-500">No stocks in your watchlist yet.</p>
+        <p className="text-sm text-slate-500">
+          {isAuthenticated
+            ? "No stocks in your watchlist yet. Add stocks from a stock page."
+            : "Log in to manage your watchlist."}
+        </p>
       ) : (
         <div className="overflow-x-auto">
           <div className="min-w-[280px] space-y-1">

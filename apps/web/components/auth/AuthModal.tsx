@@ -128,28 +128,16 @@ export function AuthModal({ isOpen, mode, onClose, onModeChange, onSuccess }: Au
           autoComplete="email"
         />
 
-        <div>
-          <Input
-            label="Password"
-            type="password"
-            placeholder="Enter your password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            minLength={8}
-            autoComplete={isLogin ? "current-password" : "new-password"}
-          />
-          {isLogin && (
-            <div className="mt-2 text-right">
-              <button
-                type="button"
-                className="text-sm text-blue-400 hover:text-blue-300"
-              >
-                Forgot password?
-              </button>
-            </div>
-          )}
-        </div>
+        <Input
+          label="Password"
+          type="password"
+          placeholder="Enter your password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          minLength={8}
+          autoComplete={isLogin ? "current-password" : "new-password"}
+        />
 
         {error && <p className="text-sm text-red-400">{error}</p>}
 
